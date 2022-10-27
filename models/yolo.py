@@ -1,8 +1,10 @@
 import argparse
+from hmac import trans_5C
 import logging
 import sys
 from copy import deepcopy
-
+import onnx
+from onnx.backend.test.case.node import expect
 sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 logger = logging.getLogger(__name__)
 import torch
@@ -12,8 +14,31 @@ from utils.autoanchor import check_anchor_order
 from utils.general import make_divisible, check_file, set_logging
 from utils.torch_utils import time_synchronized, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
     select_device, copy_attr
-from utils.loss import SigmoidBin
+from utils.datasets import letterbox
+from utils.general import non_max_suppression_mask_conf
 
+from detectron2.modeling.poolers import ROIPooler
+from detectron2.structures import Boxes
+from detectron2.utils.memory import retry_if_cuda_oom
+from detectron2.layers import paste_masks_in_image
+import torch
+import torch.nn as nn
+from torch.utils.mobile_optimizer import optimize_for_mobile
+import yaml
+import numpy as np
+import models
+from models.experimental import attempt_load, End2End
+from utils.activations import Hardswish, SiLU
+from utils.general import set_logging, check_img_size
+from utils.torch_utils import select_device
+from utils.add_nms import RegisterNMS
+from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
+import cv2
+from utils.datasets import letterbox
+from torchvision import transforms
+
+from utils.loss import SigmoidBin
+from torchvision import transforms
 try:
     import thop  # for FLOPS computation
 except ImportError:
@@ -331,11 +356,8 @@ class MT(nn.Module):
             # self.attn_m = nn.ModuleList(nn.Conv2d(x, attn * self.na, 3, padding=1) for x in ch)  # output conv
             self.attn_m = nn.ModuleList(nn.Conv2d(x, attn * self.na, 1) for x in ch[0])  # output conv
             #self.attn_m = nn.ModuleList(nn.Conv2d(x, attn * self.na,  kernel_size=3, stride=1, padding=1) for x in ch)  # output conv
-
+        print("MT module")
     def forward(self, x):
-        #print(x[1].shape)
-        #print(x[2].shape)
-        #print([a.shape for a in x])
         #exit()
         # x = x.copy()  # for profiling
         z = []  # inference output
@@ -363,13 +385,42 @@ class MT(nn.Module):
                 za.append(attn[i].view(bs, -1, self.attn))
                 if self.mask_iou:
                     zi.append(iou[i].view(bs, -1))
-                if self.grid[i].shape[2:4] != x[0][i].shape[2:4]:
-                    self.grid[i] = self._make_grid(nx, ny).to(x[0][i].device)
+                
+                # if self.grid[i].shape[2:4] != x[0][i].shape[2:4]:
+                #     print("We enter selfgrid*shape")
+                self.grid[i] = self._make_grid(nx, ny).to(x[0][i].device)
 
                 y = x[0][i].sigmoid()
                 y[..., 0:2] = (y[..., 0:2] * 3. - 1.0 + self.grid[i]) * self.stride[i]  # xy
-                y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * self.anchor_grid[i]  # wh
+                """
+                node = onnx.helper.make_node(
+                    "Mul",
+                    inputs=["m", "p"],
+                    outputs=["h"],
+                )
+
+                m = ((y[..., 2:4] * 2) ** 2)
+                p =  (self.anchor_grid[i])
+                h = m * p  # expected output [4., 10., 18.]
+                print(expect(node, inputs=[m, p], outputs=[h], name="test_mul_example"))
+                """
+                trans1 = (y[..., 2:4] * 2) ** 2
+                trans2  =self.anchor_grid[i]
+                # print(y[...,2:4])
+                # print("shape of trans1", np.shape(np.array(trans1)))
+                # print("shape of trans2", np.shape(np.array(trans2)))
+                # #y = np.array(y)
+                # trans = np.dot(np.array(trans1),(np.array(trans2)))  # wh
+                # print("np.shape((y[..., 2:4] * 2) ** 2)", np.shape((y[..., 2:4] * 2) ** 2))
+                # print(" self.anchor_grid[i]", np.shape( self.anchor_grid[i]))
+                # y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * self.anchor_grid[i]
+                y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * self.anchor_grid[i].data
+                # y[..., 2:4] = torch.tensor(np.array((y[..., 2:4] * 2) ** 2) * np.array(self.anchor_grid[i]))
+                # print("y1:::::::::::::::::::::::", y[..., 2:4])
+                # y[..., 2:4] = torch.mul(trans1,trans2)
+                # print("y2:::::::::::::::::::::::", y[..., 2:4])
                 z.append(y.view(bs, -1, self.no))
+
         output["mask_iou"] = None
         if not self.training:
             output["test"] = torch.cat(z, 1)
@@ -417,11 +468,12 @@ class IAuxDetect(nn.Module):
         
         self.ia = nn.ModuleList(ImplicitA(x) for x in ch[:self.nl])
         self.im = nn.ModuleList(ImplicitM(self.no * self.na) for _ in ch[:self.nl])
-
+        print("IAuxDetect")
     def forward(self, x):
         # x = x.copy()  # for profiling
         z = []  # inference output
         self.training |= self.export
+        print("On entre là dedans")
         for i in range(self.nl):
             x[i] = self.m[i](self.ia[i](x[i]))  # conv
             x[i] = self.im[i](x[i])
@@ -615,7 +667,7 @@ class Model(nn.Module):
         self.model, self.save = parse_model(deepcopy(self.yaml), ch=[ch])  # model, savelist
         self.names = [str(i) for i in range(self.yaml['nc'])]  # default names
         # print([x.shape for x in self.forward(torch.zeros(1, ch, 64, 64))])
-
+        device_x = torch.device( "cpu")
         # Build strides, anchors
         m = self.model[-1]  # Detect()
         if isinstance(m, Detect):
@@ -669,6 +721,8 @@ class Model(nn.Module):
             m.anchors /= m.stride.view(-1, 1, 1)
             self.stride = m.stride
             self._initialize_biases()
+        with open('data/hyp.scratch.mask.yaml') as f:
+            self.hyp = yaml.load(f, Loader=yaml.FullLoader)
 
         # Init weights, biases
         initialize_weights(self)
@@ -695,7 +749,7 @@ class Model(nn.Module):
         else:
             return self.forward_once(x, profile)  # single-scale inference, train
 
-    def forward_once(self, x, profile=False):
+    def forward_once(self, x,  profile=False):
         y, dt = [], []  # outputs
         for m in self.model:
             if m.f != -1:  # if not from previous layer
@@ -726,7 +780,6 @@ class Model(nn.Module):
         if profile:
             print('%.1fms total' % sum(dt))
         return x
-
     def _initialize_biases(self, cf=None):  # initialize biases into Detect(), cf is class frequency
         # https://arxiv.org/abs/1708.02002 section 3.3
         # cf = torch.bincount(torch.tensor(np.concatenate(dataset.labels, 0)[:, 0]).long(), minlength=nc) + 1.

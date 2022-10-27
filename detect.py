@@ -1,7 +1,7 @@
 import argparse
 import time
 from pathlib import Path
-
+import numpy as np
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
@@ -34,7 +34,7 @@ def detect(save_img=False):
     model = attempt_load(weights, map_location=device)  # load FP32 model
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(imgsz, s=stride)  # check img_size
-
+    print("opt img size", opt.img_size)
     if trace:
         model = TracedModel(model, device, opt.img_size)
 
@@ -67,7 +67,7 @@ def detect(save_img=False):
     old_img_b = 1
 
     t0 = time.time()
-    for path, img, im0s, vid_cap in dataset:
+    for path, img, im0s in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -84,13 +84,22 @@ def detect(save_img=False):
 
         # Inference
         t1 = time_synchronized()
+        print("Img informations")
+        print(img)
+        print(np.shape(img))
         pred = model(img, augment=opt.augment)[0]
+        print("Predictions informations")
+        print(pred)
+        print(np.shape(pred))
         t2 = time_synchronized()
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
         t3 = time_synchronized()
-
+        print(opt.classes)
+        print(opt.conf_thres)
+        print(opt.iou_thres)
+        print(pred)
         # Apply Classifier
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)

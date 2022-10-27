@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torchvision
+
 import yaml
 
 from utils.google_utils import gsutil_getsize
@@ -831,15 +832,15 @@ def non_max_suppression_mask_conf(prediction, attn, bases, pooler, hyp, conf_thr
     min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
     max_det = 300  # maximum number of detections per image
     time_limit = 10.0  # seconds to quit after
-    redundant = True  # require redundant detections
+    # redundant = True  # require redundant detections
     multi_label = nc > 1  # multiple labels per box (adds 0.5ms/img)
 
     t = time.time()
     output = [None] * prediction.shape[0]
     output_mask = [None] * prediction.shape[0]
-    output_mask_score = [None] * prediction.shape[0]
-    output_ac = [None] * prediction.shape[0]
-    output_ab = [None] * prediction.shape[0]
+    # output_mask_score = [None] * prediction.shape[0]
+    # output_ac = [None] * prediction.shape[0]
+    # output_ab = [None] * prediction.shape[0]
     
     def RMS_contrast(masks):
         mu = torch.mean(masks, dim=-1, keepdim=True)
@@ -903,39 +904,39 @@ def non_max_suppression_mask_conf(prediction, attn, bases, pooler, hyp, conf_thr
             i = i[:max_det]
             
         
-        all_candidates = []
-        all_boxes = []
-        if vote:
-            ious = box_iou(boxes[i], boxes) > iou_thres
-            for iou in ious: 
-                selected_masks = pred_masks[iou]
-                k = min(10, selected_masks.shape[0])
-                _, tfive = torch.topk(scores[iou], k)
-                all_candidates.append(pred_masks[iou][tfive])
-                all_boxes.append(x[iou, :4][tfive])
-        #exit()
+        # all_candidates = []
+        # all_boxes = []
+        # if vote:
+        #     ious = box_iou(boxes[i], boxes) > iou_thres
+        #     for iou in ious: 
+        #         selected_masks = pred_masks[iou]
+        #         k = min(10, selected_masks.shape[0])
+        #         _, tfive = torch.topk(scores[iou], k)
+        #         all_candidates.append(pred_masks[iou][tfive])
+        #         all_boxes.append(x[iou, :4][tfive])
+        # #exit()
             
-        if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
-            try:  # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
-                iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
-                weights = iou * scores[None]  # box weights
-                x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(1, keepdim=True)  # merged boxes
-                if redundant:
-                    i = i[iou.sum(1) > 1]  # require redundancy
-            except:  # possible CUDA error https://github.com/ultralytics/yolov3/issues/1139
-                print(x, i, x.shape, i.shape)
-                pass
+        # if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
+        #     try:  # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
+        #         iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
+        #         weights = iou * scores[None]  # box weights
+        #         x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(1, keepdim=True)  # merged boxes
+        #         if redundant:
+        #             i = i[iou.sum(1) > 1]  # require redundancy
+        #     except:  # possible CUDA error https://github.com/ultralytics/yolov3/issues/1139
+        #         print(x, i, x.shape, i.shape)
+        #         pass
 
         output[xi] = x[i]
-        output_mask_score[xi] = mask_score[i]
-        output_ac[xi] = all_candidates
-        output_ab[xi] = all_boxes
+        # output_mask_score[xi] = mask_score[i]
+        # output_ac[xi] = all_candidates
+        # output_ab[xi] = all_boxes
         if attn is not None:
             output_mask[xi] = pred_masks[i]
         if (time.time() - t) > time_limit:
             break  # time limit exceeded
 
-    return output, output_mask, output_mask_score, output_ac, output_ab
+    return output, output_mask#, output_mask_score, output_ac, output_ab
 
 
 def strip_optimizer(f='best.pt', s=''):  # from utils.general import *; strip_optimizer()
