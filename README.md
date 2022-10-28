@@ -101,13 +101,14 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
 - **Input argument** can either be an image or a directory of images (directory/*)
  
  ## Visualizing Yolov7 with TensorRT :
- To visualize segmentation results on your **images**, you can run the following commands : 
+ **TensorRT**
+  1. To visualize segmentation results on your **images**, you can run the following commands : 
  
- 1. TensorRT
+ 
  ```
 python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path --onnx_model $onnx_model_path --imgsz $image_size --save_image --save_path $result_directory_path
  ```
-To visualize segmentation results on your **video**, you can run the following commands : 
+ 2. To visualize segmentation results on your **video**, you can run the following commands : 
  ```
 python3  segment_video.py --input $input_video_path   --model $tensorrt_engine_path --onnx_model $onnx_model_path  --imgsz $image_size --save_video --save_path $result_directory_path/video_name.mp4
  ```
