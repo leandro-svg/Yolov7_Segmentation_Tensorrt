@@ -51,21 +51,18 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  
  ## Models and Results for TensorRT and ONNX inference script:
  
- The inference speed for Pytorch, ONNX and TensorRT has been compared and shown in the table below. SparseInst running with TensoRT achieved more a less 3 times faster inference speed of SparseInst than running with Pytorch. Lowering the input size of the image can lead to a decent real-time speed.
- The models from TensorRT and ONNX are built upon the first Pytorch listed weights in the table below : SparseInst R-50 G-IAM.
+ The inference speed for TensorRT are shown in the table below. Yolov7 running with TensoRT achieved more a less 3 times faster inference speed than Yolov7 running with Pytorch. Lowering the input size of the image can lead to a decent real-time speed.
+ The models from TensorRT and ONNX are built upon the Pytorch weights : Yolov7-mask.pt : https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-mask.pt .
  
- *Note: All the computations has been done on a Nvidia Jetson TX2 Jetpack 4.6. Further test will be done on a Nvidia 2070 RTI*
+ *Note: All the computations has been done on a Nvidia Jetson TX2 Jetpack 4.6.*
  
  | Model | Input Size |  Inference Speed| Weights
-| :---         |     :---:      |        :---: |         ---: |
-| Pytorch   | 640   | 1.71  FPS  | [model](https://drive.google.com/file/d/130gyxYT6r9j5Nwp5nCo_wthYPuTwa9c4/view?usp=sharing)|
-| TensorRT     | 320    |  20.32 FPS     |[model](https://drive.google.com/file/d/17-eBWVrpnwv0ueeDsEmAqSKlNh3If4AI/view?usp=sharing)|
-| TensorRT     | 640    |  6.00 FPS     |[model](https://drive.google.com/file/d/1Kh97LZNzsuBJTeDVXwRKx8CiX7CeMI3v/view?usp=sharing)|
-| ONNX     | 320    | 0.22 FPS     |[model](https://drive.google.com/file/d/1H6YH3YUPaA4vO3IyIGaZNAkGBsU9xHCH/view?usp=sharing)|
-| ONNX     | 640     |0.03 FPS     |[model](https://drive.google.com/file/d/1GEoQssyJ9MZRnEISiatF_tREpdGAnSjk/view?usp=sharing)|
+| :---         |     :---:      |        :---: |
+
+| TensorRT     | 320    |  14.00 FPS     |
+| TensorRT     | 640    |  5.00 FPS     |
  
 
- 
  <img
   src="results/result_tensorrt.png"
   alt="Alt text"
