@@ -73,7 +73,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  
  To build the model from Pytorch to ONNX, you need to run the following command. You can set the arguments to default. Please check if the config path and the model weights path are correctly set up.
  ```
- <mkdir onnx && python3 export_mask.py --weights ./yolov7-mask.pt  --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --imgsz $imgsz --input $input_image_path>
+ mkdir onnx && python3 export_mask.py --weights ./yolov7-mask.pt  --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --imgsz $imgsz --input $input_image_path
  ```
  The onnx file will be saved in the created onnx directory. The input that you give will be infered right after the export operation to verify if the export was successful. if you don't want to infer the image, just add --no_infer.
  
@@ -82,7 +82,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   To build the model from ONNX to TensorRT, you need to run the following command. You can set the arguments to default. If you have any problem while parsing the model to TensorRT, don't hesitate to ask. The exportation is based on the repository TensorRT-For-YOLO-Series (https://github.com/Linaom1214/TensorRT-For-YOLO-Series).
  ```
  git clone https://github.com/Linaom1214/TensorRT-For-YOLO-Series.git
- <mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16>
+ mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16
  ```
  
   ## Testing Yolov7 with Pytorch, TensorRT and ONNX :
