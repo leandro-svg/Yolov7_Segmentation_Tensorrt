@@ -1,5 +1,5 @@
-# SparseInst_TensorRT
- **This repository implement the real-time Instance Segmentation Algorithm named SparseInst with TensoRT and ONNX.**
+# Yolov7_seg_TensorRT
+ **This repository implement the real-time Instance Segmentation Algorithm named Yolov7 with TensoRT.**
  
 ## Some remarks 
   - The initial repository on which I build mine is from **WongKinYiu/yolov7**__ repository (https://github.com/WongKinYiu/yolov7)), for additional information about the installation of Yolov7, refer to the original repository. 
