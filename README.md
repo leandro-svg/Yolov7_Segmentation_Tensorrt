@@ -10,9 +10,9 @@
   
  
  ## Installation and dependencies
- 
+
 <details>
-  <summary>Expand</summary>
+<summary>Expand</summary>
   - Install Pytorch (1.10.0) and TorchVision (0.11.1)
   ```
   pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
