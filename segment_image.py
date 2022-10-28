@@ -200,13 +200,15 @@ def get_parser():
     )
     parser.add_argument(
     "--save_path",
-    default="./results",
     help="A file or directory of your output images ",
     )
     return parser
 
 args = get_parser().parse_args()
 arg_input = args.input
+if (args.save_path is None):
+    print("You need a result directory : mkdir results && --save_path results/")
+    exit(0)
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))
 origin_img = pred.inference(arg_input)
 
