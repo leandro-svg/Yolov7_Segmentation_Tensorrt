@@ -101,13 +101,10 @@ class BaseEngine(object):
             cnimg = nimg.copy()
             ite = 0
             for one_mask, conf, cls in zip(pred_masks_np, pred_conf, pred_cls):
-                outfile = open('texte.txt', 'a')
                 cnimg[:,:] = cnimg[:,:]*0
                 if conf < 0.25:
                     continue
                 label = '%s %.3f' % (names[int(cls)], conf)
-                outfile.write(str(label)+'\n')
-                outfile.close() 
 
                 color = [np.random.randint(255), np.random.randint(255), np.random.randint(255)]                           
                 pnimg[one_mask] = pnimg[one_mask] * 0.5 + np.array(color, dtype=np.uint8) * 0.5
@@ -181,14 +178,14 @@ def get_parser():
             description="Detectron2 demo for builtin models")
     parser.add_argument(
     "--input",
-    default="/home/nvidia/SSD/Leandro_Intern/yolov7_trt/data/horses.jpg",
+    default="./data/horses.jpg",
     nargs="+",
     help="A file or directory of your input data "
     "If not given, will show output in an OpenCV window.",
     )
     parser.add_argument(
     "--model",
-    default='./engine/640_yolov7-mask_fp32.engine',
+    default='./engine/yolov7-mask.engine',
     help="A file or directory of your model ",
     )
     parser.add_argument(
@@ -207,7 +204,7 @@ def get_parser():
     )
     parser.add_argument(
     "--save_path",
-    default="./results/car_images/",
+    default="./results",
     help="A file or directory of your output images ",
     )
     return parser
