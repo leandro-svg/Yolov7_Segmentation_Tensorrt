@@ -58,9 +58,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  
  | Model | Input Size |  Inference Speed 
 | :---         |     :---:      |     ---: |
-
 | TensorRT     | 320    |  14.00 FPS    |
-| TensorRT     | 640    |  5.00 FPS     |
 | TensorRT     | 640    |  5.00 FPS     |
  
 
