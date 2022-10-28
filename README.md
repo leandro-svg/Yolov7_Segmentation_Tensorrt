@@ -1,4 +1,4 @@
-# Yolov7 Segmentor with TensorRT
+# Yolov7 Segmentation model with TensorRT
  **This repository implement the real-time Instance Segmentation Algorithm named Yolov7 with TensoRT.**
  
 ## Some remarks 
