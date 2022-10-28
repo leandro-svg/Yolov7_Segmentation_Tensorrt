@@ -21,16 +21,16 @@
   - Install CUDA (10.2) and cuDNN (8.0.0) : https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local
   
     - For WSL-Ubuntu :
-    ```js
-    sudo wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-wsl-ubuntu.pin
-    sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600
-    sudo wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_insta
-        llers/cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
-    sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
-    sudo cp /var/cuda-repo-wsl-ubuntu-11-7-local/cuda-96193861-keyring.gpg /usr/share/keyrings/
-    sudo apt-get update
-    sudo apt-get -y install cuda
-    ```
+  ```js
+  sudo wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-wsl-ubuntu.pin
+  sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600
+  sudo wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_insta
+      llers/cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
+  sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
+  sudo cp /var/cuda-repo-wsl-ubuntu-11-7-local/cuda-96193861-keyring.gpg /usr/share/keyrings/
+  sudo apt-get update
+  sudo apt-get -y install cuda
+  ```
   
   - Install TensorRT (8.0.1.6), if you are using an nvidia edge device, TensorRT should already be installed
   ```js
