@@ -61,12 +61,12 @@
  The models from TensorRT and ONNX are built upon the Pytorch weights : Yolov7-mask.pt : https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-mask.pt .
  
  *Note: All the computations has been done on a Nvidia Jetson TX2 Jetpack 4.6.*
- 
+ <center>
  | Model | Input Size |  Inference Speed 
 | :---         |     :---:      |     ---: |
 | Yolov7 Segmentation TensorRT     | 320    |  14.00 FPS    |
 | Yolov7 Segmentation TensorRT     | 640    |  5.00 FPS     |
-
+</center>
 
   Instance Segmentation  with           |  Yolov7 TensorRT
 :-------------------------:|:-------------------------:
