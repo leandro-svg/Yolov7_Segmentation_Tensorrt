@@ -136,11 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('--include-nms', action='store_true', help='export end2end onnx')
     parser.add_argument('--fp16', action='store_true', help='CoreML FP16 half-precision export')
     parser.add_argument('--int8', action='store_true', help='CoreML INT8 quantization')
-    parser.add_argument(
-    "--input",
-    nargs="+",
-    help="A file or directory of your input data "
-    )
+    parser.add_argument("--input", nargs="+", help="A file or directory of your input data ")
     parser.add_argument('--imgsz', type=int, default=320, help='image size')  # height, width
 
     opt = parser.parse_args()
@@ -156,7 +152,7 @@ if __name__ == '__main__':
     with open('data/hyp.scratch.mask.yaml') as f:
             hyp = yaml.load(f, Loader=yaml.FullLoader)
     device = torch.device( "cpu")
-    weights = "yolov7-mask.pt"
+    weights = opt.weights
     model = attempt_load(weights, map_location=device)
     _ =    model.eval()
    
@@ -244,6 +240,5 @@ for img_path in tqdm.tqdm(image_path):
 
     
     save_path = "./results/car_images/export_test/"
-    cv2.imwrite(save_path+str(int(opt.imgsz))+"letter_box"+str(iteration)+".jpg", image_letter)
     cv2.imwrite(save_path+str(int(opt.imgsz))+"_onnx_cv2img_"+str(iteration)+".jpg", pnimg)
     iteration+=1

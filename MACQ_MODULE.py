@@ -10,7 +10,6 @@ import torch
 import yaml
 import tqdm
 import glob
-from carbox import BOX_3D
 
 from utils.datasets import letterbox
 from torchvision import transforms
@@ -101,7 +100,6 @@ class BaseEngine(object):
             nimg[:,:] = nimg[:,:]*0
             cnimg = nimg.copy()
             ite = 0
-            box3d = BOX_3D()
             for one_mask, conf, cls in zip(pred_masks_np, pred_conf, pred_cls):
                 outfile = open('texte.txt', 'a')
                 cnimg[:,:] = cnimg[:,:]*0
@@ -115,9 +113,6 @@ class BaseEngine(object):
                 pnimg[one_mask] = pnimg[one_mask] * 0.5 + np.array(color, dtype=np.uint8) * 0.5
                 cnimg[one_mask] = cnimg[one_mask]*0 + 255 
                 nimg[one_mask] = nimg[one_mask]*0 + 255
-                #cv2.imwrite("results/car_images/staging/one_mask_2/onemask"+str(ite)+".jpg", cnimg)
-                if not(args.no_box) and ite < 40:
-                        real_image = box3d.Box3D(pnimg, real_image, cnimg, args.save_image, args.cam, True, "VP_calibration")
                 ite +=1
         else : 
             print("No predictions")
@@ -150,7 +145,7 @@ class BaseEngine(object):
             hyp = yaml.load(f, Loader=yaml.FullLoader)
 
         if args.use_trt :
-            imh_path_alone = "/home/nvidia/SSD/Leandro_Intern/yolov7_trt/data/horses.jpg"
+            imh_path_alone = "./data/horses.jpg"
             img, real_image = self.PreProcess(imh_path_alone)
             for _ in  range(5):
                 output = self.infer(img) #dry run
@@ -177,10 +172,8 @@ class BaseEngine(object):
                 pnimg, nimg, real_image = self.PostProcess(img, hyp, inf_out, attn, bases, sem_output, real_image)
                 
                 if args.save_image:
-                    print(" Saved in : " + "results/car_images/"+args.cam+"/segmentation/"+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
-                    # cv2.imwrite("results/car_images/"+args.cam+"/boxes/"+str(int(self.imgsz[0]))+"images_box_3D"+str(iteration)+".jpg", real_image)
-                    cv2.imwrite("results/car_images/"+args.cam+"/segmentation/"+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
-                    # cv2.imwrite("results/car_images/"+args.cam+"/mask/"+str(int(self.imgsz[0]))+"_trt_cv2img_mask_VP_"+str(iteration)+".jpg", nimg)
+                    print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
+                    cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
                 iteration += 1
 
 def get_parser():        
@@ -217,22 +210,11 @@ def get_parser():
     default="./results/car_images/",
     help="A file or directory of your output images ",
     )
-    parser.add_argument(
-        "--cam",
-        default="None",
-        type=str,
-        help="staging, haunter or hypno",
-        )
-        
-    parser.add_argument(
-        "--no_box",
-        action="store_true",
-        )
     return parser
 
 args = get_parser().parse_args()
 arg_input = args.input
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))
-origin_img = pred.inference(arg_input)
+origin_img = pred.inference(args, arg_input)
 
 
