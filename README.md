@@ -26,7 +26,7 @@
     sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600
     sudo wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_insta
         llers/cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
-  sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
+    sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
     sudo cp /var/cuda-repo-wsl-ubuntu-11-7-local/cuda-96193861-keyring.gpg /usr/share/keyrings/
     sudo apt-get update
     sudo apt-get -y install cuda
