@@ -167,9 +167,9 @@ class BaseEngine(object):
                         vid_writer.release()  # release previous video writer
                     if vid_cap:  # video
                         fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    vid_writer = cv2.VideoWriter(str(args.save_path)+"reult.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (self.imgsz, self.imgsz))
+                        w = int(self.imgsz[0])
+                        h = int(self.imgsz[1])
+                    vid_writer = cv2.VideoWriter(str(args.save_path)+"reult.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (h, w))
                 vid_writer.write(pnimg)
             iteration += 1
           
