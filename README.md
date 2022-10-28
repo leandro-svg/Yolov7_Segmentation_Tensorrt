@@ -71,6 +71,8 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   Solarized dark             |  Solarized Ocean
 :-------------------------:|:-------------------------:
 ![](results/640_trt_cv2img_VP_0.jpg)  |  ![](results/640_trt_cv2img_VP_1.jpg)
+![](results/640_trt_cv2img_VP_2.jpg)  |  ![](results/640_trt_cv2img_VP_3.jpg)
+![](results/640_trt_cv2img_VP_4.jpg)  |  ![](results/640_trt_cv2img_VP_5.jpg)
  
 
  ## Building the ONNX model  :
