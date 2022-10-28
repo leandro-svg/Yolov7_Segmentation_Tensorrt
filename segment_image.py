@@ -10,6 +10,7 @@ import torch
 import yaml
 import tqdm
 import glob
+import onnx
 
 from utils.datasets import letterbox
 from torchvision import transforms
@@ -47,6 +48,11 @@ class BaseEngine(object):
          'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone',
          'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear',
          'hair drier', 'toothbrush' ]
+
+        f = args.onnx_model
+        model_onnx = onnx.load(f)
+        self.input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model_onnx.graph.input]
+
         logger = trt.Logger(trt.Logger.WARNING)
         trt.init_libnvinfer_plugins(logger,'')
         runtime = trt.Runtime(logger)
@@ -57,21 +63,22 @@ class BaseEngine(object):
         self.inputs, self.outputs, self.bindings = [], [], []
         self.stream = cuda.Stream()
         for binding in engine:
-            size = trt.volume(engine.get_binding_shape(binding))
+            self.size_trt = trt.volume(engine.get_binding_shape(binding))
             dtype = trt.nptype(engine.get_binding_dtype(binding))
-            host_mem = cuda.pagelocked_empty(size, dtype)
+            host_mem = cuda.pagelocked_empty(self.size_trt, dtype)
             device_mem = cuda.mem_alloc(host_mem.nbytes)
             self.bindings.append(int(device_mem))
             if engine.binding_is_input(binding):
                 self.inputs.append(HostDeviceMem(host_mem, device_mem))
             else:
                 self.outputs.append(HostDeviceMem(host_mem, device_mem))
-
     def PreProcess(self, image_path):
         image = cv2.imread(image_path)
         real_image = image.copy()
-        img = letterbox(image, self.imgsz, stride=64, auto=True)[0]
-        img = transforms.ToTensor()(img)
+        image = letterbox(image, self.imgsz, stride=64, auto=True)[0]
+        if (np.shape(image) != self.input_shapes[0][2:4]): #Not the same shape as the input of the onnx model, needs to implement dynamical shape
+            image = (cv2.resize(image, self.input_shapes[0][2:4]))
+        img = transforms.ToTensor()(image)
         img = torch.unsqueeze(img, 0)
         return img, real_image
 
@@ -105,7 +112,6 @@ class BaseEngine(object):
                 if conf < 0.25:
                     continue
                 label = '%s %.3f' % (names[int(cls)], conf)
-
                 color = [np.random.randint(255), np.random.randint(255), np.random.randint(255)]                           
                 pnimg[one_mask] = pnimg[one_mask] * 0.5 + np.array(color, dtype=np.uint8) * 0.5
                 cnimg[one_mask] = cnimg[one_mask]*0 + 255 
@@ -153,10 +159,13 @@ class BaseEngine(object):
         for img_path in tqdm.tqdm(image_path):
             img_ = cv2.imread(img_path)
             real_image = img_.copy()
-            img = letterbox(img_, self.imgsz, stride=64, auto=True)[0]
-            img = transforms.ToTensor()(img)
+            image = letterbox(img_, self.imgsz, stride=64, auto=True)[0]
+            if (np.shape(image)[0:2] != self.input_shapes[0][2:4]): #Not the same shape as the input of the onnx model, needs to implement dynamical shape
+                print("/!\ Shape of the input " + str(np.shape(image)[0:2]) + " different from the input size of the ONNX model "+ str(self.input_shapes[0][2:4])+", have to resize the image.")
+                image = (cv2.resize(image, (self.input_shapes[0][3], self.input_shapes[0][2])))
+            img = transforms.ToTensor()(image)
             img = torch.unsqueeze(img, 0)
-            
+
             output = self.infer(img)
 
             for i in range(len(output)):
@@ -170,7 +179,6 @@ class BaseEngine(object):
             if args.save_image:
                 print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
                 cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
-            
             iteration += 1
 
 def get_parser():        
@@ -187,6 +195,11 @@ def get_parser():
     "--model",
     default='./engine/yolov7-mask.engine',
     help="A file or directory of your model ",
+    )
+    parser.add_argument(
+    "--onnx_model",
+    default='onnx/640_yolov7_mask.onnx',
+    help="A file or directory of your onnx model ",
     )
     parser.add_argument(
     "--imgsz",

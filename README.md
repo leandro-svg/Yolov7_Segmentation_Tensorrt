@@ -88,8 +88,8 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  git clone https://github.com/Linaom1214/TensorRT-For-YOLO-Series.git
  <mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16>
  ```
- 
-  ## Testing SparseInst with Pytorch, TensorRT and ONNX :
+
+  ## Testing Yolov7 with TensorRT :
   
   To test the inference speed (FPS) of the TensorRT model, run the following command. 
   
@@ -109,11 +109,11 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  
  1. TensorRT
  ```
-python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path  --imgsz $image_size --save_image --save_path $result_directory_path
+python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path --onnx_model $onnx_engine_path --imgsz $image_size --save_image --save_path $result_directory_path
  ```
 To visualize segmentation results on your **video**, you can run the following commands : 
  ```
-python3  segment_video.py --input $input_video_path   --model $tensorrt_engine_path  --imgsz $image_size --save_video --save_path $result_directory_path/video_name.mp4
+python3  segment_video.py --input $input_video_path   --model $tensorrt_engine_path  --onnx_model $onnx_engine_path --imgsz $image_size --save_video --save_path $result_directory_path/video_name.mp4
  ```
 
 **Notes :**

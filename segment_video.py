@@ -52,6 +52,12 @@ class BaseEngine(object):
          'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone',
          'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear',
          'hair drier', 'toothbrush' ]
+
+        f = args.onnx_model
+        model_onnx = onnx.load(f)
+        self.input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model_onnx.graph.input]
+
+
         logger = trt.Logger(trt.Logger.WARNING)
         trt.init_libnvinfer_plugins(logger,'')
         runtime = trt.Runtime(logger)
@@ -75,6 +81,8 @@ class BaseEngine(object):
         image = cv2.imread(image_path)
         real_image = image.copy()
         img = letterbox(image, self.imgsz, stride=64, auto=True)[0]
+        if (np.shape(image) != self.input_shapes[0][2:4]): #Not the same shape as the input of the onnx model, needs to implement dynamical shape
+            image = (cv2.resize(image, self.input_shapes[0][2:4]))
         img = transforms.ToTensor()(img)
         img = torch.unsqueeze(img, 0)
         return img, real_image
@@ -145,6 +153,9 @@ class BaseEngine(object):
         for path, im0s, vid_cap in dataset:
             real_image = im0s.copy()
             img = letterbox(im0s, self.imgsz, stride=64, auto=True)[0]
+            if (np.shape(image)[0:2] != self.input_shapes[0][2:4]): #Not the same shape as the input of the onnx model, needs to implement dynamical shape
+                print("/!\ Shape of the input " + str(np.shape(image)[0:2]) + " different from the input size of the ONNX model "+ str(self.input_shapes[0][2:4])+", have to resize the image.")
+                image = (cv2.resize(image, (self.input_shapes[0][3], self.input_shapes[0][2])))
             img = transforms.ToTensor()(img)
             img = torch.unsqueeze(img, 0)
             
