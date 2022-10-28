@@ -10,7 +10,8 @@
   
  
  ## Installation and dependencies
- <details>
+ 
+<details>
   <summary>Expand</summary>
   - Install Pytorch (1.10.0) and TorchVision (0.11.1)
   ```
@@ -48,7 +49,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   pip install onnx
   ```
   - Install all the other packages needed to run the original SparseInst algorithm (Should be done if you have installed Dectectron2)
- </details>
+</details>
 
  
  ## Models and Results for TensorRT and ONNX inference script:
