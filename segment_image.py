@@ -167,9 +167,7 @@ class BaseEngine(object):
             img = transforms.ToTensor()(image)
             img = torch.unsqueeze(img, 0)
 
-            start = time.time()
             output = self.infer(img)
-            print(time.time() - start)
 
 
             for i in range(len(output)):
