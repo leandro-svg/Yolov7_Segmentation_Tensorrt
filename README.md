@@ -62,6 +62,7 @@
  
  *Note: All the computations has been done on a Nvidia Jetson TX2 Jetpack 4.6.*
 <center>
+
 | Model | Input Size |  Inference Speed 
 | :---         |     :---:      |     ---: |
 | Yolov7 Segmentation TensorRT     | 320    |  14.00 FPS    |
