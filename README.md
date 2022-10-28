@@ -11,7 +11,7 @@
  
  ## Installation and dependencies
  <details>
-    <summary>Click me</summary>
+  <summary>Click me</summary>
     - Install Pytorch (1.10.0) and TorchVision (0.11.1)
       ```
       pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
@@ -48,6 +48,7 @@
       pip install onnx
       ```
     - Install all the other packages needed to run the original SparseInst algorithm (Should be done if you have installed Dectectron2)
+
  </details>
 
  
