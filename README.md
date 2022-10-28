@@ -64,8 +64,8 @@
  
  | Model | Input Size |  Inference Speed 
 | :---         |     :---:      |     ---: |
-| TensorRT     | 320    |  14.00 FPS    |
-| TensorRT     | 640    |  5.00 FPS     |
+| Yolov7 Segmentation TensorRT     | 320    |  14.00 FPS    |
+| Yolov7 Segmentation TensorRT     | 640    |  5.00 FPS     |
 
 
   Instance Segmentation  with           |  Yolov7 TensorRT
