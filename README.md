@@ -89,7 +89,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   
   To test the inference speed (FPS) of the TensorRT model, run the following command. 
   
-**TensorRT
+**TensorRT**
  ```
  python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path --onnx_model $onnx_model_path  --imgsz $image_size
  ```
