@@ -206,7 +206,7 @@ def get_parser():
 
 args = get_parser().parse_args()
 arg_input = args.input
-if (args.save_path is None):
+if (args.save_path is None and args.save_image):
     print("You need a result directory : mkdir results && --save_path results/")
     exit(0)
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))

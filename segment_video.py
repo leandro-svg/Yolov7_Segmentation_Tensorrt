@@ -212,7 +212,7 @@ def get_parser():
 
 args = get_parser().parse_args()
 arg_input = args.input
-if (args.save_path is None):
+if (args.save_path is None and args.save_video):
     print("You need a result directory : mkdir results && --save_path results/name_video.mp4")
     exit(0)
 dataset = LoadImages(arg_input[0], img_size=320, stride=64)

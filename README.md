@@ -86,59 +86,36 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   To build the model from ONNX to TensorRT, you need to run the following command. You can set the arguments to default. If you have any problem while parsing the model to TensorRT, don't hesitate to ask. The exportation is based on the repository TensorRT-For-YOLO-Series (https://github.com/Linaom1214/TensorRT-For-YOLO-Series).
  ```
  git clone https://github.com/Linaom1214/TensorRT-For-YOLO-Series.git
- <mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/name_engine.engine -p fp16>
+ <mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16>
  ```
  
   ## Testing SparseInst with Pytorch, TensorRT and ONNX :
   
   To test the inference speed (FPS) of the Pytorch, TensorRT and ONNX models, run the following command. 
   
- 1. Pytorch
- ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/*  --use_pytorch 
- ```
  2. TensorRT
  ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/*  --use_tensorrt --tensorrt_engine engine/sparseinst_trt_320_320.engine
+ python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path  --imgsz $image_size
  ```
- 3. ONNX
- ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/* --use_onnx --onnx_engine onnx/sparseinst_onnx_320_320.onnx 
- ```
+
  
 **Notes :**
 - **Input argument** can either be an image or a directory of images (directory/*)
-- You can of course infer all three together, just add the argument --use_model of the model you want to infer aswell as the engine (Not for Pytorch).
-- In the terminal : 
-  - *TRT inference only* time reprensents the inference speed of the model alone
-
-  ```
-  TRT inference only use time 4.970773220062256 for 100 images, FPS=20.117594501474272
-  ```
-  - *TRT algorithm* time represents the inference speed and the preprocessing time combined
-
-  ```
-  TRT algorithm use time 22.519110441207886 for 100 images, FPS=4.440672745980644
-  ```
  
- ## Visualizing SparseInst with Pytorch, TensorRT and ONNX :
- To visualize segmentation results on your images, you can run the following commands : 
+ ## Visualizing Yolov7 with TensorRT :
+ To visualize segmentation results on your **images**, you can run the following commands : 
  
- 1. Pytorch
+ 1. TensorRT
  ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/*  --use_pytorch --output_pytorch results/result_image_pytorch/result_pytorch --save_image
+python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path  --imgsz $image_size --save_image --save_path $result_directory_path
  ```
- 2. TensorRT
+To visualize segmentation results on your **video**, you can run the following commands : 
  ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/*  --use_tensorrt --tensorrt_engine engine/sparseinst_trt_320_320.engine --output_tensorrt results/result_image_tensorrt/result_tensorrt --save_image
+python3  segment_video.py --input $input_video_path   --model $tensorrt_engine_path  --imgsz $image_size --save_video --save_path $result_directory_path/video_name.mp4
  ```
- 3. ONNX
- ```
- sudo python3 eval_tensorrt_onnx.py  -c 0.2 --width_resized 320 --height_resized 320 --input datasets/coco/calib_images/* --use_onnx --onnx_engine onnx/sparseinst_onnx_320_320.onnx --output_onnx results/result_image_onnx/result_onnx --save_image
- ```
+
 **Notes :**
-- You can still infer and visualize all three together, just add all the argument together
-- If you don't specify --save_image, it will only infer the model and not save the outputs.
+- If you don't specify --save_image or --save_video, it will only infer the model and not save the outputs.
 
 
  
