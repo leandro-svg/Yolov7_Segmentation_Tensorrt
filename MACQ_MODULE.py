@@ -195,10 +195,6 @@ def get_parser():
     help="A file or directory of your model ",
     )
     parser.add_argument(
-    "--use_trt",
-    action="store_true",
-    )
-    parser.add_argument(
     "--save_image",
     action="store_true",
     )
