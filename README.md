@@ -111,11 +111,12 @@
  
  ## Visualizing Yolov7 with TensorRT :
  **TensorRT**
-  1. To visualize segmentation results on your **images**, you can run the following commands : 
+  1. To visualize segmentation results on your **images or directory of images**, you can run the following commands : 
  
  
  ```
 python3  segment_image.py --input $input_image_path   --model $tensorrt_engine_path --onnx_model $onnx_model_path --imgsz $image_size --save_image --save_path $result_directory_path
+python3  segment_image.py --input $image_directory_path/*   --model $tensorrt_engine_path --onnx_model $onnx_model_path --imgsz $image_size --save_image --save_path $result_directory_path
  ```
  2. To visualize segmentation results on your **video**, you can run the following commands : 
  ```
