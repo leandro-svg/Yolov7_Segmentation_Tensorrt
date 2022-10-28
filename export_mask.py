@@ -8,7 +8,6 @@ import tensorrt as trt
 import pycuda.autoinit
 import pycuda.driver as cuda
 import numpy as np
-import cv2
 import argparse
 import time
 from pathlib import Path
@@ -31,7 +30,6 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized,
 import onnx
 import matplotlib.pyplot as plt
 import torch
-import cv2
 import yaml
 from torchvision import transforms
 import numpy as np
@@ -56,17 +54,14 @@ from utils.general import set_logging, check_img_size
 from utils.torch_utils import select_device
 from utils.add_nms import RegisterNMS
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-import cv2
 from utils.datasets import letterbox
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import torch
-import cv2
 import yaml
 import torchvision
 from torchvision import transforms
 import numpy as np
-import cv2 as cv
 
 from utils.datasets import letterbox
 from utils.general import non_max_suppression_mask_conf
@@ -87,18 +82,17 @@ from utils.general import set_logging, check_img_size
 from utils.torch_utils import select_device
 from utils.add_nms import RegisterNMS
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-import cv2
 from utils.datasets import letterbox
 from torchvision import transforms
 
 def PostProcess(img, hyp, model, inf_out, attn, bases, sem_output):
-    #bases = torch.cat([bases, sem_output], dim=1)
+    bases = torch.cat([bases, sem_output], dim=1)
     nb, _, height, width = img.shape
     names = model.names
     pooler_scale = model.pooler_scale
     pooler = ROIPooler(output_size=hyp['mask_resolution'], scales=(pooler_scale,), sampling_ratio=1, pooler_type='ROIAlignV2', canonical_level=2)
     
-    output, output_mask, output_mask_score, output_ac, output_ab = non_max_suppression_mask_conf(inf_out, attn, bases, pooler, hyp, conf_thres=0.25, iou_thres=0.65, merge=False, mask_iou=None)
+    output, output_mask = non_max_suppression_mask_conf(inf_out, attn, bases, pooler, hyp, conf_thres=0.25, iou_thres=0.65, merge=False, mask_iou=None)
 
     pred, pred_masks = output[0], output_mask[0]
     base = bases[0]
@@ -128,7 +122,6 @@ def PostProcess(img, hyp, model, inf_out, attn, bases, sem_output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='./yolor-csp-c.pt', help='weights path')
-    parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
     parser.add_argument('--batch-size', type=int, default=1, help='batch size')
     parser.add_argument('--dynamic', action='store_true', help='dynamic ONNX axes')
     parser.add_argument('--dynamic-batch', action='store_true', help='dynamic batch onnx for tensorrt and onnx-runtime')
@@ -145,32 +138,20 @@ if __name__ == '__main__':
     parser.add_argument('--int8', action='store_true', help='CoreML INT8 quantization')
     parser.add_argument(
     "--input",
-    default="/home/nvidia/SSD/Leandro_Intern/SparseInst_TensorRT/car_image/*",
     nargs="+",
     help="A file or directory of your input data "
-    "If not given, will show output in an OpenCV window.",
     )
-    parser.add_argument('--imgsz', type=int, default=160, help='image size')  # height, width
+    parser.add_argument('--imgsz', type=int, default=320, help='image size')  # height, width
 
     opt = parser.parse_args()
-    #opt.img_size = opt.img_size[0]
-    opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     opt.dynamic = opt.dynamic and not opt.end2end
     opt.dynamic = False if opt.dynamic_batch else opt.dynamic
     set_logging()
     t = time.time()
-    print(opt.imgsz)
 
     
     device = torch.device( "cpu")
-    """
-    with open('data/hyp.scratch.mask.yaml') as f:
-        hyp = yaml.load(f, Loader=yaml.FullLoader)
-    weigths = torch.load('yolov7-mask.pt')
-    model = weigths['model']
-    model = model.to(device)
-    """
-    
+   
     
     with open('data/hyp.scratch.mask.yaml') as f:
             hyp = yaml.load(f, Loader=yaml.FullLoader)
@@ -184,7 +165,7 @@ if __name__ == '__main__':
     loop = 1
     for i in range(loop):
         image = cv2.imread('/home/nvidia/SSD/Leandro_Intern/SparseInst_TensorRT/car_image/1661345271846_13289_gray.jpg')  # 504x378 image
-        image = letterbox(image, (640,640), stride=64, auto=True)[0]
+        image = letterbox(image, (opt.imgsz,opt.imgsz), stride=64, auto=True)[0]
         image_ = image.copy()
         image = transforms.ToTensor()(image)
         image = torch.tensor(np.array([image.numpy()]))
@@ -196,7 +177,7 @@ if __name__ == '__main__':
         import onnx
     
         print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
-        f ="./onnx/640_yolov7-mask_dummy.onnx" # filename
+        f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
         model.eval()
         output_names = ['output']
         dynamic_axes = None
@@ -217,7 +198,7 @@ if __name__ == '__main__':
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))
 
-f ="./onnx/640_yolov7-mask_NMS.onnx" # filename
+f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
 image_path = opt.input
 
 iteration = 0
@@ -238,23 +219,15 @@ inname = [i.name for i in session.get_inputs()]
 time_use_trt_only = 0
 time_use_trt_ = 0
 for img_path in tqdm.tqdm(image_path):
-    print(img_path)
     start_time = time.time()
     image = cv2.imread(img_path)
     image = letterbox(image, (opt.imgsz, opt.imgsz), stride=64, auto=True)[0]
     image_letter = image.copy()
     image_ = image.copy()
-    #image = cv2.resize(image, (self.imgsz[1], self.imgsz[0]))
     image = transforms.ToTensor()(image)
     image = torch.tensor(np.array([image.numpy()]))  ##tensor or numpy??
     img = np.array(image)
-    #tensorrt inference
-    start = time.time()
     
-    end = time.time()
-    time_use_trt_only += end - start
-    end_time = time.time()
-    time_use_trt_ += end_time - start_time
     img = np.ascontiguousarray(img, dtype=np.float32)
     inp = {inname[0]:img}
     output = session.run(outname, inp)[0]
@@ -264,16 +237,10 @@ for img_path in tqdm.tqdm(image_path):
     output4 = session.run(outname, inp)[4]
     output5 = session.run(outname, inp)[5]
     output6 = session.run(outname, inp)[6]
-    end = time.time()
-    time_use_trt_only += end - start
-    end_time = time.time()
-    time_use_trt_ += end_time - start_time
     inf_out, train_out = torch.tensor(output), [torch.tensor(output2),torch.tensor(output3),torch.tensor(output4)]
     attn, mask_iou, bases, sem_output = torch.tensor(output1), None, torch.tensor(output5), torch.tensor(output6)
-    
     img = torch.tensor(img)
     pnimg = PostProcess(img, hyp, model, inf_out, attn, bases, sem_output)
-    print(pnimg)
 
     
     save_path = "./results/car_images/export_test/"

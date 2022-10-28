@@ -179,7 +179,7 @@ class BaseEngine(object):
                 if args.save_image:
                     print(" Saved in : " + "results/car_images/"+args.cam+"/segmentation/"+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
                     # cv2.imwrite("results/car_images/"+args.cam+"/boxes/"+str(int(self.imgsz[0]))+"images_box_3D"+str(iteration)+".jpg", real_image)
-                    # cv2.imwrite("results/car_images/"+args.cam+"/segmentation/"+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
+                    cv2.imwrite("results/car_images/"+args.cam+"/segmentation/"+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
                     # cv2.imwrite("results/car_images/"+args.cam+"/mask/"+str(int(self.imgsz[0]))+"_trt_cv2img_mask_VP_"+str(iteration)+".jpg", nimg)
                 iteration += 1
 
