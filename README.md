@@ -68,7 +68,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
   title="Result for TensorRT demo"
   style="display: inline-block; margin: 1 auto; max-width: 150px">
 
-             |  Solarized Ocean
+  Instance Segmentation             |  Yolov7 TensorRT
 :-------------------------:|:-------------------------:
 ![](results/640_trt_cv2img_VP_0.jpg)  |  ![](results/640_trt_cv2img_VP_1.jpg)
 ![](results/640_trt_cv2img_VP_2.jpg)  |  ![](results/640_trt_cv2img_VP_3.jpg)
