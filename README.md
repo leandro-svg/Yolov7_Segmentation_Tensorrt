@@ -77,8 +77,9 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
  
  To build the model from Pytorch to ONNX, you need to run the following command. You can set the arguments to default. Please check if the config path and the model weights path are correctly set up.
  ```
- <python3 export_mask.py --weights "./yolov7-mask.pt"  --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --imgsz $imgsz --input $input_image_path>
+ <mkdir onnx && python3 export_mask.py --weights ./yolov7-mask.pt  --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --imgsz $imgsz --input $input_image_path>
  ```
+ The onnx file will be saved in the created onnx directory. The input that you give will be infered right after the parsing operation ot ONNX file. if you don't want to infer the image, just add --no_infer.
  
   ## Building the TensorRT model  :
   

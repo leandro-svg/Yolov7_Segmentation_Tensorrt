@@ -138,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--int8', action='store_true', help='CoreML INT8 quantization')
     parser.add_argument("--input", nargs="+", help="A file or directory of your input data ")
     parser.add_argument('--imgsz', type=int, default=320, help='image size')  # height, width
+    parser.add_argument('--no_infer', action='store_true', help='CoreML FP16 half-precision export')
 
     opt = parser.parse_args()
     opt.dynamic = opt.dynamic and not opt.end2end
@@ -160,7 +161,7 @@ if __name__ == '__main__':
     time1 = time.time()
     loop = 1
     for i in range(loop):
-        image = cv2.imread('/home/nvidia/SSD/Leandro_Intern/SparseInst_TensorRT/car_image/1661345271846_13289_gray.jpg')  # 504x378 image
+        image = cv2.imread('data/horses.jpg')  # 504x378 image
         image = letterbox(image, (opt.imgsz,opt.imgsz), stride=64, auto=True)[0]
         image_ = image.copy()
         image = transforms.ToTensor()(image)
@@ -173,7 +174,7 @@ if __name__ == '__main__':
         import onnx
     
         print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
-        f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
+        f ="./onnx/"+str(int(opt.imgsz))+"_yolov7_mask.onnx" # filename
         model.eval()
         output_names = ['output']
         dynamic_axes = None
@@ -194,51 +195,53 @@ if __name__ == '__main__':
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))
 
-f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
-image_path = opt.input
 
-iteration = 0
-start_time_all = time.time()
-w = f
-providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider']
-session = ort.InferenceSession(w, providers=providers)
+if not(opt.no_infer):
+    f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
+    image_path = opt.input
 
-model_onnx = onnx.load(w)
-input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model_onnx.graph.input]
-output_shapes = [[d.dim_value for d in _output.type.tensor_type.shape.dim] for _output in model_onnx.graph.output]
+    iteration = 0
+    start_time_all = time.time()
+    w = f
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider']
+    session = ort.InferenceSession(w, providers=providers)
+
+    model_onnx = onnx.load(w)
+    input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model_onnx.graph.input]
+    output_shapes = [[d.dim_value for d in _output.type.tensor_type.shape.dim] for _output in model_onnx.graph.output]
 
 
 
-outname = [i.name for i in session.get_outputs()]
+    outname = [i.name for i in session.get_outputs()]
 
-inname = [i.name for i in session.get_inputs()]
-time_use_trt_only = 0
-time_use_trt_ = 0
-for img_path in tqdm.tqdm(image_path):
-    start_time = time.time()
-    image = cv2.imread(img_path)
-    image = letterbox(image, (opt.imgsz, opt.imgsz), stride=64, auto=True)[0]
-    image_letter = image.copy()
-    image_ = image.copy()
-    image = transforms.ToTensor()(image)
-    image = torch.tensor(np.array([image.numpy()]))  ##tensor or numpy??
-    img = np.array(image)
-    
-    img = np.ascontiguousarray(img, dtype=np.float32)
-    inp = {inname[0]:img}
-    output = session.run(outname, inp)[0]
-    output1 = session.run(outname, inp)[1]
-    output2 = session.run(outname, inp)[2]
-    output3 = session.run(outname, inp)[3]
-    output4 = session.run(outname, inp)[4]
-    output5 = session.run(outname, inp)[5]
-    output6 = session.run(outname, inp)[6]
-    inf_out, train_out = torch.tensor(output), [torch.tensor(output2),torch.tensor(output3),torch.tensor(output4)]
-    attn, mask_iou, bases, sem_output = torch.tensor(output1), None, torch.tensor(output5), torch.tensor(output6)
-    img = torch.tensor(img)
-    pnimg = PostProcess(img, hyp, model, inf_out, attn, bases, sem_output)
+    inname = [i.name for i in session.get_inputs()]
+    time_use_trt_only = 0
+    time_use_trt_ = 0
+    for img_path in tqdm.tqdm(image_path):
+        start_time = time.time()
+        image = cv2.imread(img_path)
+        image = letterbox(image, (opt.imgsz, opt.imgsz), stride=64, auto=True)[0]
+        image_letter = image.copy()
+        image_ = image.copy()
+        image = transforms.ToTensor()(image)
+        image = torch.tensor(np.array([image.numpy()]))  ##tensor or numpy??
+        img = np.array(image)
+        
+        img = np.ascontiguousarray(img, dtype=np.float32)
+        inp = {inname[0]:img}
+        output = session.run(outname, inp)[0]
+        output1 = session.run(outname, inp)[1]
+        output2 = session.run(outname, inp)[2]
+        output3 = session.run(outname, inp)[3]
+        output4 = session.run(outname, inp)[4]
+        output5 = session.run(outname, inp)[5]
+        output6 = session.run(outname, inp)[6]
+        inf_out, train_out = torch.tensor(output), [torch.tensor(output2),torch.tensor(output3),torch.tensor(output4)]
+        attn, mask_iou, bases, sem_output = torch.tensor(output1), None, torch.tensor(output5), torch.tensor(output6)
+        img = torch.tensor(img)
+        pnimg = PostProcess(img, hyp, model, inf_out, attn, bases, sem_output)
 
-    
-    save_path = "./results/car_images/export_test/"
-    cv2.imwrite(save_path+str(int(opt.imgsz))+"_onnx_cv2img_"+str(iteration)+".jpg", pnimg)
-    iteration+=1
+        
+        save_path = "./result_onnx"
+        cv2.imwrite(save_path+str(int(opt.imgsz))+".jpg", pnimg)
+        iteration+=1
