@@ -169,7 +169,7 @@ class BaseEngine(object):
                         fps = vid_cap.get(cv2.CAP_PROP_FPS)
                         w = int(self.imgsz[0])
                         h = int(self.imgsz[1])
-                    vid_writer = cv2.VideoWriter(str(args.save_path)+"reult.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (h, w))
+                    vid_writer = cv2.VideoWriter(str(args.save_path), cv2.VideoWriter_fourcc(*'mp4v'), fps, (h, w))
                 vid_writer.write(pnimg)
             iteration += 1
           
@@ -213,7 +213,7 @@ def get_parser():
 args = get_parser().parse_args()
 arg_input = args.input
 if (args.save_path is None):
-    print("You need a result directory : mkdir results && --save_path results/")
+    print("You need a result directory : mkdir results && --save_path results/name_video.mp4")
     exit(0)
 dataset = LoadImages(arg_input[0], img_size=320, stride=64)
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))
