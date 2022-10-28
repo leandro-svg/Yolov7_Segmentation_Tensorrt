@@ -60,13 +60,7 @@ sudo dpkg -i cuda-repo-wsl-ubuntu-11-7-local_11.7.1-1_amd64.deb
 | :---         |     :---:      |     ---: |
 | TensorRT     | 320    |  14.00 FPS    |
 | TensorRT     | 640    |  5.00 FPS     |
- 
 
- <img
-  src="results/result_tensorrt.png"
-  alt="Alt text"
-  title="Result for TensorRT demo"
-  style="display: inline-block; margin: 1 auto; max-width: 150px">
 
   Instance Segmentation             |  Yolov7 TensorRT
 :-------------------------:|:-------------------------:
