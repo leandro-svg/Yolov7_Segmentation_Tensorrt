@@ -2,7 +2,7 @@
  **This repository implement the real-time Instance Segmentation Algorithm named Yolov7 with TensoRT.**
  
 ## Some remarks 
-  - The initial repository on which I build mine is from **WongKinYiu/yolov7**__ repository (https://github.com/WongKinYiu/yolov7)), for additional information about the installation of Yolov7, refer to the original repository. 
+  - The initial repository on which I build mine is from __**WongKinYiu/yolov7**__ repository (https://github.com/WongKinYiu/yolov7)), for additional information about the installation of Yolov7, refer to the original repository. 
   - This project is built upon the excellent framework detectron2, and you should install detectron2 first, please check official installation guide for more details. (https://github.com/facebookresearch/detectron2.git)
   - For command other than TensoRT and ONNX inference, please refer to the initial repository (e.g detect.py). 
   - If you face any problem during the parsing time, don't hesitate to drop an issue.
