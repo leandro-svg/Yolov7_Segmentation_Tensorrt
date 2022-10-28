@@ -141,37 +141,37 @@ class BaseEngine(object):
         with open('data/hyp.scratch.mask.yaml') as f:
             hyp = yaml.load(f, Loader=yaml.FullLoader)
 
-        if args.use_trt :
-            imh_path_alone = "./data/horses.jpg"
-            img, real_image = self.PreProcess(imh_path_alone)
-            for _ in  range(5):
-                output = self.infer(img) #dry run
+        imh_path_alone = "./data/horses.jpg"
+        img, real_image = self.PreProcess(imh_path_alone)
+        for _ in  range(5):
+            output = self.infer(img) #dry run
+        
+        iteration = 0
+        if len(image_path) == 1:
+            image_path = glob.glob(os.path.expanduser(image_path[0]))
+            assert image_path, "The input path(s) was not found"
+        for img_path in tqdm.tqdm(image_path):
+            img_ = cv2.imread(img_path)
+            real_image = img_.copy()
+            img = letterbox(img_, self.imgsz, stride=64, auto=True)[0]
+            img = transforms.ToTensor()(img)
+            img = torch.unsqueeze(img, 0)
             
-            iteration = 0
-            if len(image_path) == 1:
-                image_path = glob.glob(os.path.expanduser(image_path[0]))
-                assert image_path, "The input path(s) was not found"
-            for img_path in tqdm.tqdm(image_path):
-                img_ = cv2.imread(img_path)
-                real_image = img_.copy()
-                img = letterbox(img_, self.imgsz, stride=64, auto=True)[0]
-                img = transforms.ToTensor()(img)
-                img = torch.unsqueeze(img, 0)
-                
-                output = self.infer(img)
+            output = self.infer(img)
 
-                for i in range(len(output)):
-                    output[i] = torch.tensor(output[i])
-                inf_out = torch.reshape((output[5]), (1, len((output[5]))//85,85))
-                attn = torch.reshape((output[6]), (1, (len((output[6]))//980),980))
-                bases = torch.reshape( (output[0]), (1, 4, ((len(output[0])//(self.imgsz[0]//4))//4), (self.imgsz[0]//4)))
-                sem_output = torch.reshape((output[1]), (1, 1, (len(output[1])//(self.imgsz[0]//4)), (self.imgsz[0]//4)))
-                pnimg, nimg, real_image = self.PostProcess(img, hyp, inf_out, attn, bases, sem_output, real_image)
-                
-                if args.save_image:
-                    print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
-                    cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
-                iteration += 1
+            for i in range(len(output)):
+                output[i] = torch.tensor(output[i])
+            inf_out = torch.reshape((output[5]), (1, len((output[5]))//85,85))
+            attn = torch.reshape((output[6]), (1, (len((output[6]))//980),980))
+            bases = torch.reshape( (output[0]), (1, 4, ((len(output[0])//(self.imgsz[0]//4))//4), (self.imgsz[0]//4)))
+            sem_output = torch.reshape((output[1]), (1, 1, (len(output[1])//(self.imgsz[0]//4)), (self.imgsz[0]//4)))
+            pnimg, nimg, real_image = self.PostProcess(img, hyp, inf_out, attn, bases, sem_output, real_image)
+            
+            if args.save_image:
+                print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
+                cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
+            
+            iteration += 1
 
 def get_parser():        
     parser = argparse.ArgumentParser(
@@ -208,6 +208,6 @@ def get_parser():
 args = get_parser().parse_args()
 arg_input = args.input
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))
-origin_img = pred.inference(args, arg_input)
+origin_img = pred.inference(arg_input)
 
 
