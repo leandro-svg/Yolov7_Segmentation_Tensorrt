@@ -59,10 +59,11 @@
  
  The inference speed for TensorRT are shown in the table below. Yolov7 running with TensoRT achieved more a less 3 times faster inference speed than Yolov7 running with Pytorch. Lowering the input size of the image can lead to a decent real-time speed.  
  The models from TensorRT and ONNX are built upon the Pytorch weights : Yolov7-mask.pt :  
- ´´´
+
+```
 <wget -c https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-mask.pt>
-´´´
- 
+```
+
  *Note: All the computations has been done on a Nvidia Jetson TX2 Jetpack 4.6.*
 
 <div align="center">
