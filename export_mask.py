@@ -1,7 +1,6 @@
 import argparse
 import sys
 import time
-import warnings
 
 sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 import tensorrt as trt
@@ -10,80 +9,29 @@ import pycuda.driver as cuda
 import numpy as np
 import argparse
 import time
-from pathlib import Path
 import numpy as np
 import argparse
 import onnxruntime as ort
 import os
 import torch
 import torch.backends.cudnn as cudnn
-from numpy import random
 import cv2
-from utils.datasets import letterbox
-from torchvision import transforms
-from models.experimental import attempt_load
-from utils.datasets import LoadStreams, LoadImages
-from utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
-    scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
-from utils.plots import plot_one_box
-from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
 import onnx
-import matplotlib.pyplot as plt
-import torch
 import yaml
 from torchvision import transforms
-import numpy as np
 import tqdm
 
 from utils.datasets import letterbox
 from utils.general import non_max_suppression_mask_conf
-import glob
 from detectron2.modeling.poolers import ROIPooler
 from detectron2.structures import Boxes
 from detectron2.utils.memory import retry_if_cuda_oom
 from detectron2.layers import paste_masks_in_image
-import torch
-import torch.nn as nn
-from torch.utils.mobile_optimizer import optimize_for_mobile
-import yaml
-import numpy as np
-import models
-from models.experimental import attempt_load, End2End
-from utils.activations import Hardswish, SiLU
-from utils.general import set_logging, check_img_size
-from utils.torch_utils import select_device
-from utils.add_nms import RegisterNMS
-from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-from utils.datasets import letterbox
-from torchvision import transforms
-import matplotlib.pyplot as plt
-import torch
-import yaml
-import torchvision
-from torchvision import transforms
-import numpy as np
+from utils.general import set_logging
+from models.experimental import attempt_load
 
-from utils.datasets import letterbox
-from utils.general import non_max_suppression_mask_conf
 
-from detectron2.modeling.poolers import ROIPooler
-from detectron2.structures import Boxes
-from detectron2.utils.memory import retry_if_cuda_oom
-from detectron2.layers import paste_masks_in_image
-import torch
-import torch.nn as nn
-from torch.utils.mobile_optimizer import optimize_for_mobile
-import yaml
-import numpy as np
-import models
-from models.experimental import attempt_load, End2End
-from utils.activations import Hardswish, SiLU
-from utils.general import set_logging, check_img_size
-from utils.torch_utils import select_device
-from utils.add_nms import RegisterNMS
-from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-from utils.datasets import letterbox
-from torchvision import transforms
+
 
 def PostProcess(img, hyp, model, inf_out, attn, bases, sem_output):
     bases = torch.cat([bases, sem_output], dim=1)
