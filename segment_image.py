@@ -23,6 +23,21 @@ from detectron2.structures import Boxes
 from detectron2.utils.memory import retry_if_cuda_oom
 from detectron2.layers import paste_masks_in_image
 
+
+VERBOSE = str(os.getenv('YOLOv5_VERBOSE', True)).lower() == 'true'  # global verbose mode
+
+def set_logging(name=None, verbose = VERBOSE):
+    # Sets level and returns logger
+    
+    rank = int(os.getenv('RANK', -1))  # rank in world for Multi-GPU trainings
+    level = logging.INFO if verbose and rank in {-1, 0} else logging.ERROR
+    log = logging.getLogger(name)
+    log.setLevel(level)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    handler.setLevel(level)
+    log.addHandler(handler)
+
 class HostDeviceMem(object):
     def __init__(self, host_mem, device_mem):
         self.host = host_mem
@@ -36,6 +51,8 @@ class HostDeviceMem(object):
 
 class BaseEngine(object):
     def __init__(self, engine_path, imgsz=(320,320), use_torch=False, use_onnx=False):
+        set_logging("yolov5")  # run before defining LOGGER        
+        self.LOGGER = logging.getLogger("yolov5")
         self.imgsz = imgsz
         self.mean = None
         self.std = None
@@ -55,11 +72,13 @@ class BaseEngine(object):
         model_onnx = onnx.load(f)
         self.input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model_onnx.graph.input]
 
-        logger = trt.Logger(trt.Logger.WARNING)
+        self.LOGGER.info(f'Loading {engine_path} for TensorRT inference...')
+        logger = trt.Logger(trt.Logger.INFO)
         trt.init_libnvinfer_plugins(logger,'')
         runtime = trt.Runtime(logger)
         with open(engine_path, "rb") as f:
             serialized_engine = f.read()
+        self.LOGGER.info('Deserializing engine...')
         engine = runtime.deserialize_cuda_engine(serialized_engine)
         self.context = engine.create_execution_context()
         self.inputs, self.outputs, self.bindings = [], [], []
@@ -74,6 +93,7 @@ class BaseEngine(object):
                 self.inputs.append(HostDeviceMem(host_mem, device_mem))
             else:
                 self.outputs.append(HostDeviceMem(host_mem, device_mem))
+        self.LOGGER.info('Engine Loaded.')
     def PreProcess(self, image_path):
         image = cv2.imread(image_path)
         real_image = image.copy()
@@ -184,7 +204,7 @@ class BaseEngine(object):
                 print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
                 cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
             iteration += 1
-
+        self.LOGGER.info('Done. Results are saved in :'+args.save_path)
 def get_parser():        
     parser = argparse.ArgumentParser(
             description="Detectron2 demo for builtin models")
@@ -227,6 +247,7 @@ if (args.save_path is None and args.save_image):
     print("You need a result directory : mkdir results && --save_path results/")
     exit(0)
 pred = BaseEngine(engine_path=args.model, imgsz=(args.imgsz,args.imgsz))
+pred.LOGGER.info('TensorRT inference begins !')
 origin_img = pred.inference(arg_input)
 
 
