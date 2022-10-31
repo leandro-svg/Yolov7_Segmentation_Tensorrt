@@ -70,6 +70,7 @@ def PostProcess(img, hyp, model, inf_out, attn, bases, sem_output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='./yolor-csp-c.pt', help='weights path')
+    parser.add_argument('--onnx_name', type=str, default='./yolov7_mask.onnx', help='onnx filename')
     parser.add_argument('--batch-size', type=int, default=1, help='batch size')
     parser.add_argument('--dynamic', action='store_true', help='dynamic ONNX axes')
     parser.add_argument('--dynamic-batch', action='store_true', help='dynamic batch onnx for tensorrt and onnx-runtime')
@@ -122,7 +123,7 @@ if __name__ == '__main__':
         import onnx
     
         print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
-        f ="./onnx/"+str(int(opt.imgsz))+"_yolov7_mask.onnx" # filename
+        f ="./onnx/"+opt.onnx_name
         model.eval()
         output_names = ['output']
         dynamic_axes = None
@@ -145,7 +146,7 @@ if __name__ == '__main__':
 
 
 if not(opt.no_infer):
-    f ="./onnx/"+str(int(opt.imgsz))+"_yolov7_mask.onnx" # filename
+    f ="./onnx/"+opt.onnx_name
     image_path = opt.input
 
     iteration = 0
