@@ -12,6 +12,7 @@ import tqdm
 import glob
 import onnx
 import time
+from pathlib import Path
 
 from utils.datasets import letterbox
 from torchvision import transforms
@@ -179,6 +180,7 @@ class BaseEngine(object):
             pnimg, nimg, real_image = self.PostProcess(img, hyp, inf_out, attn, bases, sem_output, real_image)
             
             if args.save_image:
+                Path(args.save_path).mkdir(parents=True, exist_ok=True)
                 print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
                 cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
             iteration += 1
