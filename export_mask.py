@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
 
 if not(opt.no_infer):
-    f ="./onnx/"+str(int(opt.imgsz))+"_yolov7-_.onnx" # filename
+    f ="./onnx/"+str(int(opt.imgsz))+"_yolov7_mask.onnx" # filename
     image_path = opt.input
 
     iteration = 0
