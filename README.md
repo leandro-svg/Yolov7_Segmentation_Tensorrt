@@ -95,7 +95,7 @@ wget -c https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-mask.
   To build the model from ONNX to TensorRT, you need to run the following command. You can set the arguments to default. If you have any problem while parsing the model to TensorRT, don't hesitate to ask. The exportation is based on the repository TensorRT-For-YOLO-Series (https://github.com/Linaom1214/TensorRT-For-YOLO-Series).
  ```
  git clone https://github.com/Linaom1214/TensorRT-For-YOLO-Series.git
- mkdir engine && python3  ./tensorrt-python/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16
+ mkdir engine && python3  ./TensorRT-For-YOLO-Series/export.py -o $onnx_file_path -e $./engine/engine_name.engine -p fp16
  ```
  
   ## Testing Yolov7 with Pytorch, TensorRT and ONNX :
