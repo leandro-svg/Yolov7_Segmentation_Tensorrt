@@ -110,7 +110,7 @@ if __name__ == '__main__':
     time1 = time.time()
     loop = 1
     for i in range(loop):
-        image = cv2.imread('data/horses.jpg')  # 504x378 image
+        image = cv2.imread(img_path)  # 504x378 image
         image = letterbox(image, (opt.imgsz,opt.imgsz), stride=64, auto=True)[0]
         image_ = image.copy()
         image = transforms.ToTensor()(image)
