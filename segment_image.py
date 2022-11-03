@@ -13,6 +13,7 @@ import glob
 import onnx
 import time
 from pathlib import Path
+import logging
 
 from utils.datasets import letterbox
 from torchvision import transforms
@@ -204,7 +205,9 @@ class BaseEngine(object):
                 print(" Saved in : " + str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg")
                 cv2.imwrite(str(args.save_path)+str(int(self.imgsz[0]))+"_trt_cv2img_VP_"+str(iteration)+".jpg", pnimg)
             iteration += 1
-        self.LOGGER.info('Done. Results are saved in :'+args.save_path)
+         if args.save_image : 
+            self.LOGGER.info('Results are saved in :'+args.save_path)
+        self.LOGGER.info('Done.')
 def get_parser():        
     parser = argparse.ArgumentParser(
             description="Detectron2 demo for builtin models")
